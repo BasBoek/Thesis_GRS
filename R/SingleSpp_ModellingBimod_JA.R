@@ -78,7 +78,7 @@ myBiomodModelOut <- BIOMOD_Modeling(
                            NbRunEval=1, 
                            DataSplit=80, 
                            Prevalence=0.5, 
-                           VarImport=3,
+                           VarImport=3,                            ####### What is this????
                            models.eval.meth = c('ROC'),
                            SaveObj = TRUE,
                            rescal.all.models = TRUE,
@@ -106,7 +106,7 @@ dimnames(myBiomodModelEval)
 myBiomodModelEval["TSS","Testing.data","RF",,]
 
 # let's print the ROC scores of all selected models
-myBiomodModelEval["ROC","Testing.data",,,]
+myBiomodModelEval["ROC","Testing.###################################################data",,,]
 
 
 
@@ -117,7 +117,7 @@ myBiomodModelEval["ROC","Testing.data",,,]
 get_variables_importance(myBiomodModelOut)
 
 
-###################################################
+
 ### code chunk number 11: ensemble_modeling
 ###################################################
 myBiomodEM <- BIOMOD_EnsembleModeling( 
@@ -135,7 +135,7 @@ myBiomodEM <- BIOMOD_EnsembleModeling(
                      committee.averaging = F,
                      prob.mean.weight = T,
                      prob.mean.weight.decay = 'proportional',
-                     VarImport = 1)
+                     VarImport = 1)                           ######## What is this???????
 
 get_evaluations(myBiomodEM)
 
