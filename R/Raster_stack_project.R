@@ -6,11 +6,11 @@ rm(list=ls())
 
 library(raster)
 library(tiff)
-library(rgdal)
 
 ## Set your folder location where your rasters folders are stored
-workspace_files <- "F:/Workspace_LiDAR/3_Rasters_25m/"
-Loc_new_rasters <- "F:/Workspace_LiDAR/4_Merged_Rasters/"
+workspace_files <- "D:/Workspace_LiDAR/3_Rasters_25m/"
+Loc_new_rasters <- "D:/Workspace_Raster/Stacked_Rasters_Unmerged/"
+
 ## Get a list of all folders
 source("R/List_Directories.R")
 Dirlist <- Get_Dirs(workspace_files)
@@ -27,6 +27,7 @@ for(i in 1:nr_folders){
   # Make list of rasters per AHN blad
   c_ras <- paste(AHN_tile_full, "/", list.files(AHN_tile_full, pattern = "[c].*.tif"), sep = "")
   d_ras <- paste(AHN_tile_full, "/", list.files(AHN_tile_full, pattern = "[d].*.tif"), sep = "")
+  nr_ras <- length(c_ras) # For later (writing to TIF)
   
   ## Stack Rasters, WATCH NUMBER OF LAYERS!
   c_stack <- stack(c_ras[1],c_ras[2],c_ras[3],c_ras[4],c_ras[5],c_ras[6], c_ras[7], c_ras[8])
@@ -34,22 +35,8 @@ for(i in 1:nr_folders){
   projection(c_stack) <- RD_new
   projection(d_stack) <- RD_new
   writeRaster(c_stack, paste(Loc_new_rasters, "/c_", tile_name, sep=""), "GTiff", overwrite=TRUE)
+  writeRaster(d_stack, paste(Loc_new_rasters, "/d_", tile_name, sep=""), "GTiff", overwrite=TRUE)
 }
-  
-
-# Stack rasters
-  
-
-# Project rasters
-  
-  
-  
-  
-  
-  
-
-
-
 
 
 
