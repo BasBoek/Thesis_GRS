@@ -37,24 +37,27 @@ for(i in 1:nr_folders){
   # Setting all pixels with less than 100 point counts to NA
   c_stack[sum_points<100] <- NA
   
+  # Normalize data for height
+  #height_norm <- brick(c_stack[[1]]*6.6667, c_stack[[2]]*3.333, c_stack[[3]]*2, c_stack[[4]], c_stack[[5]]/3, c_stack[[6]]/5, c_stack[[7]]/10, c_stack[[8]]/60)
+  
   # Normalize the data for the difference in total points
-  #c_points_norm <- c_stack/sum_points * 100
+  points_norm <- c_stack/sum_points * 100
   
-  # Normalize the data for the difference in height
-  c_height_norm <- brick(c_stack[[1]]*6.6667, c_stack[[2]]*3.333, c_stack[[3]]*2, c_stack[[4]], c_stack[[5]]/3, c_stack[[6]]/5, c_stack[[7]]/10, c_stack[[8]]/60)
+  # Normalize the data for the difference in height and points, 
+  height_point_skew <- brick(points_norm[[1]]*6.6667, points_norm[[2]]*3.333, points_norm[[3]]*2, points_norm[[4]], points_norm[[5]]/3, points_norm[[6]]/5, points_norm[[7]]/10, points_norm[[8]]/60)
   
-  new_sum <- c_height_norm[[1]] + c_height_norm[[2]] + c_height_norm[[3]] + c_height_norm[[4]] + c_height_norm[[5]] + c_height_norm[[6]] + c_height_norm[[7]] + c_height_norm[[8]]
+  new_sum <- height_point_skew[[1]] + height_point_skew[[2]] + height_point_skew[[3]] + height_point_skew[[4]] + height_point_skew[[5]] + height_point_skew[[6]] + height_point_skew[[7]] + height_point_skew[[8]]
     
   # Normalization of both
-  #c_height_and_points_norm <- c_height_norm/new_sum * 100
+  height_points_norm <- height_point_skew/new_sum * 100
   
   ## Write the rasters
-  
-  #writeRaster(c_stack, paste(Loc_new_rasters, "/c_", tile_name, sep=""), "GTiff", overwrite=TRUE)
-  #writeRaster(sum_points, paste(Loc_new_rasters, "/c_point_sum_", tile_name, sep=""), "GTiff", overwrite=TRUE)
-  #writeRaster(c_points_norm, paste(Loc_new_rasters, "/c_points_norm_", tile_name, sep=""), "GTiff", overwrite=TRUE)
-  #writeRaster(c_height_norm, paste(Loc_new_rasters, "/c_height_norm_", tile_name, sep=""), "GTiff", overwrite=TRUE)
-  #writeRaster(c_height_and_points_norm, paste(Loc_new_rasters, "/c_points_heights_norm_", tile_name, sep=""), "GTiff", overwrite=TRUE)
+  writeRaster(c_stack, paste(Loc_new_rasters, "/c_", tile_name, sep=""), "GTiff", overwrite=TRUE)
+  writeRaster(sum_points, paste(Loc_new_rasters, "/c_point_sum_", tile_name, sep=""), "GTiff", overwrite=TRUE)
+  writeRaster(points_norm, paste(Loc_new_rasters, "/points_norm_", tile_name, sep=""), "GTiff", overwrite=TRUE)
+  writeRaster(height_norm, paste(Loc_new_rasters, "/height_norm_", tile_name, sep=""), "GTiff", overwrite=TRUE)
+  writeRaster(height_point_skew, paste(Loc_new_rasters, "/height_point_skew_", tile_name, sep=""), "GTiff", overwrite=TRUE)
+  writeRaster(height_points_norm, paste(Loc_new_rasters, "/height_points_norm", tile_name, sep=""), "GTiff", overwrite=TRUE)
   writeRaster(new_sum, paste(Loc_new_rasters, "/c_new_sum_per_m", tile_name, sep=""), "GTiff", overwrite=TRUE)
   
   
