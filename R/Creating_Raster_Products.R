@@ -8,8 +8,8 @@ library(raster)
 library(rgdal)
 
 ## Set your folder location where your rasters folders are stored
-workspace_files <- "D:/Workspace_LiDAR/Rasters_25m/"
-Loc_new_rasters <- "D:/Workspace_LiDAR/Raster_stacked_25m/"
+workspace_files <- "D:/Workspace_Raster/_Raster_Output_LiDAR/"
+Loc_new_rasters <- "D:/Workspace_Raster/_Raster_Output_R_Unmerged/"
 
 ## Get a list of all folders
 source("R/List_Directories.R")
@@ -38,7 +38,7 @@ for(i in 1:nr_folders){
   c_stack[sum_points<100] <- NA
   
   # Normalize data for height
-  #height_norm <- brick(c_stack[[1]]*6.6667, c_stack[[2]]*3.333, c_stack[[3]]*2, c_stack[[4]], c_stack[[5]]/3, c_stack[[6]]/5, c_stack[[7]]/10, c_stack[[8]]/60)
+  height_norm <- brick(c_stack[[1]]*6.6667, c_stack[[2]]*3.333, c_stack[[3]]*2, c_stack[[4]], c_stack[[5]]/3, c_stack[[6]]/5, c_stack[[7]]/10, c_stack[[8]]/60)
   
   # Normalize the data for the difference in total points
   points_norm <- c_stack/sum_points * 100
@@ -58,9 +58,7 @@ for(i in 1:nr_folders){
   writeRaster(height_norm, paste(Loc_new_rasters, "/height_norm_", tile_name, sep=""), "GTiff", overwrite=TRUE)
   writeRaster(height_point_skew, paste(Loc_new_rasters, "/height_point_skew_", tile_name, sep=""), "GTiff", overwrite=TRUE)
   writeRaster(height_points_norm, paste(Loc_new_rasters, "/height_points_norm", tile_name, sep=""), "GTiff", overwrite=TRUE)
-  writeRaster(new_sum, paste(Loc_new_rasters, "/c_new_sum_per_m", tile_name, sep=""), "GTiff", overwrite=TRUE)
-  
-  
+  writeRaster(new_sum, paste(Loc_new_rasters, "/c_new_sum_per_m_", tile_name, sep=""), "GTiff", overwrite=TRUE)
 }
 
 
