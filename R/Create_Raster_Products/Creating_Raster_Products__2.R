@@ -46,7 +46,7 @@ for(i in 1:nr_folders){
     mask <- sum_points_till_10m
     mask[mask==NA] <- -8888
     mask[mask<100] <- -9999
-  
+
     # Normalize data for height
     height_norm <- brick(c_stack[[1]]*6.6667, c_stack[[2]]*4, c_stack[[3]]*2, c_stack[[4]]/4, c_stack[[5]]/5, c_stack[[6]]/10, c_stack[[7]]/10, c_stack[[8]]/50)
   
