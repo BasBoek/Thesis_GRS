@@ -1,29 +1,33 @@
-## Author:  Bas#PUT ALL LANDSCAPES (TABLES) TOGETHER
-tablist<-Sys.glob("*.txt")
-full_LGN6<-do.call("rbind", lapply(tablist, read.table, header = TRUE))
-write.csv(full_LGN6,"Full_frag_table_LGN6.csv")tiaen Boekelo
+## Author:  Bastiaen Boekelo
 ## Date:    25-6-2015
 ## Content: Adjusted script of Jesus Aguirre Guttierez for creation of landscape variables for my own data.
 ##Extract Fragmentation Variables ORIGINAL LAYERS separated in small landscapes with the moddelling environment tools.
 
+rm(list=ls())
 library(raster)
 library(SDMTools)
+source("R/Create_Input_Variables/List_KM_Rasters.R")
 
-List_Files
-source("R/Create_Raster_Products/List_Directories.R")
-Dirlist <- Get_Dirs(workspace_files)
-Dirlist <- paste(Dirlist, sep="")
-Dirlist_full <- paste(workspace_files, Dirlist, sep="")
+##########################################
+########## FRAGSTATS_1FOREST  ############
+##########################################
 
+# Set source location of the rasters
+workspace_source <- "D:/SDM/Input_Rasters/ZZSplit_Rasters/_Split_Land_Use/LGN6_Fragstats_1forest/"
 
-raslist<-Sys.glob("*.tif")# LIST THE RASTERS
+# LISTING THE RASTERS
+List_KM_Rasters(workspace_source)
+
+# Determine NA values!
+NA_val <- NA
+
 for(i in 1:length(raslist)){
-  ras<-raster(raslist[i])
+  ras<-raster(raslist[100])
   b<-ClassStat(ras,25) 
-  b$NumClasses_J<-sum(as.numeric(b[,1]!=128))#CALCULATE NUMBER OF CLASSES TAKING 128 (NODATA) AWAY
-  b$ED_total_J<-sum(as.numeric(b[b$class!=128,7]))#SUM ED (SUM ED OF DIFFERENT CLASSES)
-  b$Area_total_Km2<-sum(as.numeric(b[b$class!=128,3]))/1000000#Km2
-  b$Mean_Patch_areaKm2<-sum(as.numeric(b[b$class!=128,10]))/1000000#km2
+  b$NumClasses_J<-sum(as.numeric(b[,1]!=NA_val))#CALCULATE NUMBER OF CLASSES TAKING NODATA AWAY
+  b$ED_total_J<-sum(as.numeric(b[b$class!=NA_val,7]))#SUM ED (SUM ED OF DIFFERENT CLASSES)
+  b$Area_total_Km2<-sum(as.numeric(b[b$class!=NA_val,3]))/1000000#Km2
+  b$Mean_Patch_areaKm2<-sum(as.numeric(b[b$class!=NA_val,10]))/1000000#km2
   filename<-as.character(names(ras))
   b$landscape<-filename		#CAPTURE THE LANDSCAPE NUMBER I THE ROW
   b<-b[1,c(39:43)]	#EXTRACT ONLY IMPORTANT COLUMNS
@@ -32,6 +36,17 @@ for(i in 1:length(raslist)){
 }
 print("done!")
 
+##########################################
+########### BEE_SUITABILITY  #############
+##########################################
+
+
+
+
+#PUT ALL LANDSCAPES (TABLES) TOGETHER
+tablist<-Sys.glob("*.txt")
+full_LGN6<-do.call("rbind", lapply(tablist, read.table, header = TRUE))
+write.csv(full_LGN6,"Full_frag_table_LGN6.csv")
 
 ras<-raster("data/KM_rasters/Veg_Structure/Vegetation_Structure_Masked44.TIF")
 plot(ras)
