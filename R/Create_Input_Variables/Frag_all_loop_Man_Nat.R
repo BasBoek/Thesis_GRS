@@ -23,13 +23,14 @@ table_name <- "_Man_Nat"
 NA_val <- 128
 
 for(i in 1:length(raslist)){
-  ras<-raster(raslist[101])
+  ras<-raster(raslist[i])
   b<-ClassStat(ras,25) # 25 = cell size
   b$ED_total_ManNat <-sum(as.numeric(b[b$class!=NA_val,7]))#SUM ED (SUM ED OF DIFFERENT CLASSES)
-  b$Area_total_Km2_MAN_NAT <-sum(as.numeric(b[b$class!=NA_val,3]))/1000000 #Km2
+  b$Area_total_Km2_MAnNat <-sum(as.numeric(b[b$class!=NA_val,3]))/1000000 #Km2
   filename<-as.character(names(ras))
   b$landscape<-filename  	#CAPTURE THE LANDSCAPE NUMBER I THE ROW
-  b<-b[1,c(39:41)]	#EXTRACT ONLY IMPORTANT COLUMNS
+  last_column <- length(colnames(b))
+  b<-b[1,c(39:last_column)]	#EXTRACT ONLY IMPORTANT COLUMNS
   write.table(b,paste(workspace_dest, filename, ".txt", sep=""), row.names = F)
   print(paste("img",i,"of", length(raslist)))
 }

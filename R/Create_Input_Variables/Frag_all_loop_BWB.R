@@ -31,7 +31,7 @@ for(i in 1:length(raslist)){
   b$Area_total_Km2<-sum(as.numeric(b[b$class!=NA_val,3]))/1000000 #Km2
   filename<-as.character(names(ras))
   b$landscape<-filename		#CAPTURE THE LANDSCAPE NUMBER I THE ROW
-  b<-b[1,c(39:42)]	#EXTRACT ONLY IMPORTANT COLUMNS
+  b<-b[1,c(39:43)]	#EXTRACT ONLY IMPORTANT COLUMNS
   write.table(b,paste(workspace_dest, filename, ".txt", sep=""), row.names = F)
   print(paste("img",i,"of", length(raslist)))
 }

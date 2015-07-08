@@ -8,28 +8,28 @@ library(SDMTools)
 source("R/Create_Input_Variables/List_KM_Rasters.R")
 
 ##########################################
-########## BEE_SUITABILITY  ############
+########## 6_Classes_Edges  ############
 ##########################################
 
 # SET SOURCE & DESTINATION LOCATION (and listing rasters)
-workspace_source <- "D:/SDM/Input_Rasters/ZZSplit_Rasters/_Split_Land_Use/LGN6_BeeSuitability/"
-workspace_dest <- "D:/SDM/Input_Rasters/ZZSplit_Rasters/Split_Tables/BeeSuitability/"
+workspace_source <- "D:/SDM/Input_Rasters/ZZSplit_Rasters/_Split_Vegetation_and_LU/6_Classes_Edges/"
+workspace_dest <- "D:/SDM/Input_Rasters/ZZSplit_Rasters/Split_Tables/6_Classes_Edges/"
 List_KM_Rasters(workspace_source)
 
 # Set Name of final table
-table_name <- "_BeeSuitability"
+table_name <- "_6_Classes_LUVEG"
 
 # DETERMINE NA VALUES!
-NA_val <- 128
+NA_val <- 9999
 
 for(i in 1:length(raslist)){
   ras<-raster(raslist[i])
   b<-ClassStat(ras,25) # 25 = cell size
-  b$Area_total_Km2_BS <-sum(as.numeric(b[b$class!=NA_val,3]))/1000000 #Km2
-  ras[ras==128] <- NA
-  b$Suitability <- cellStats((ras-10), 'mean')*10
+  # Give good names
+  b$ED_total_6Classes <-sum(as.numeric(b[b$class!=NA_val,7]))#SUM ED (SUM ED OF DIFFERENT CLASSES)
+  b$Area_total_Km2_6Classes <-sum(as.numeric(b[b$class!=NA_val,3]))/1000000 #Km2
   filename<-as.character(names(ras))
-  b$landscape<-filename  	#CAPTURE THE LANDSCAPE NUMBER I THE ROW
+  b$landscape<-filename    #CAPTURE THE LANDSCAPE NUMBER I THE ROW
   last_column <- length(colnames(b))
   b<-b[1,c(39:last_column)]	#EXTRACT ONLY IMPORTANT COLUMNS
   write.table(b,paste(workspace_dest, filename, ".txt", sep=""), row.names = F)
