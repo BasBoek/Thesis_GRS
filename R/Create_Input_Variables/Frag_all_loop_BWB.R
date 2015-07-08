@@ -20,15 +20,17 @@ raslist<-Sys.glob("*.tif")# LIST THE RASTERS
 for(i in 1:length(raslist)){
   ras<-raster(raslist[i])
   b<-ClassStat(ras,25) 
-  b$NumClasses_J<-sum(as.numeric(b[,1]!=128))#CALCULATE NUMBER OF CLASSES TAKING 128 (NODATA) AWAY
-  b$ED_total_J<-sum(as.numeric(b[b$class!=128,7]))#SUM ED (SUM ED OF DIFFERENT CLASSES)
-  b$Area_total_Km2<-sum(as.numeric(b[b$class!=128,3]))/1000000#Km2
-  b$Mean_Patch_areaKm2<-sum(as.numeric(b[b$class!=128,10]))/1000000#km2
-  filename<-as.character(names(ras))
-  b$landscape<-filename		#CAPTURE THE LANDSCAPE NUMBER I THE ROW
-  b<-b[1,c(39:43)]	#EXTRACT ONLY IMPORTANT COLUMNS
-  write.table(b,paste(filename,".txt"))
-  print(paste("img",i,"on", length(raslist)))
+  b$Area_total_Km2<-sum(as.numeric(b[b$class!=0,3]))/1000000#Km2
+  if(b$Area_total_Km2 => 0.7){ ## NEED TO MAKE BETTER
+    b$NumClasses_J<-sum(as.numeric(b[,1]!=0))#CALCULATE NUMBER OF CLASSES TAKING 0 (NODATA) AWAY
+    b$ED_total_J<-sum(as.numeric(b[b$class!=0,7]))#SUM ED (SUM ED OF DIFFERENT CLASSES)
+    b$Mean_Patch_areaKm2<-sum(as.numeric(b[b$class!=0,10]))/1000000#km2
+    filename<-as.character(names(ras))
+    b$landscape<-filename		#CAPTURE THE LANDSCAPE NUMBER I THE ROW
+    b<-b[1,c(39:43)]	#EXTRACT ONLY IMPORTANT COLUMNS
+    write.table(b,paste(filename,".txt"))
+    print(paste("img",i,"on", length(raslist)))
+  }
 }
 print("done!")
 
