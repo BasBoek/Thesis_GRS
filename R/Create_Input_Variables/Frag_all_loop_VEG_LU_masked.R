@@ -28,31 +28,33 @@ uniques <- c(0,1,2,3,4,5,6,7,8,20,30,60)
 for(i in 1:length(raslist)){
   ras<-raster(raslist[i])
   b<-ClassStat(ras,25) # 25 = cell size
-  b$NumClasses_VEG_LU <-sum(as.numeric(b[,1]!=NA_val))#CALCULATE NUMBER OF CLASSES TAKING NODATA AWAY
-  b$Mean_Patch_areaKm2_Veg_LU <-sum(as.numeric(b[b$class!=NA_val,10]))/1000000#km2
-  b$Area_total_Km2_VEG_LU <-sum(as.numeric(b[b$class!=NA_val,3]))/1000000 #Km2
-  filename<-as.character(names(ras))
-  b$landscape<-filename    #CAPTURE THE LANDSCAPE NUMBER I THE ROW
+  if(length(b)==38){ 
+    b$NumClasses_VEG_LU <-sum(as.numeric(b[,1]!=NA_val))#CALCULATE NUMBER OF CLASSES TAKING NODATA AWAY
+    b$Mean_Patch_areaKm2_Veg_LU <-sum(as.numeric(b[b$class!=NA_val,10]))/1000000#km2
+    b$Area_total_Km2_VEG_LU <-sum(as.numeric(b[b$class!=NA_val,3]))/1000000 #Km2
+    filename<-as.character(names(ras))
+    b$landscape<-filename    #CAPTURE THE LANDSCAPE NUMBER I THE ROW
   
-  ##########################################################################
-  ## CREATING NEW COLUMNS WITH '% AREA OF TOTAL' PER CLASS
-  for(ii in uniques){
-    Area <- b$total.area[b$class==ii]
-    empty_check <- length(Area)
-    if(empty_check==0){
-      b$var <- 0
-    } else {
-      b$var <- (b$total.area[b$class==ii] / 1000000) / b$Area_total_Km2_VEG_LU * 100
+    ##########################################################################
+    ## CREATING NEW COLUMNS WITH '% AREA OF TOTAL' PER CLASS
+    for(ii in uniques){
+      Area <- b$total.area[b$class==ii]
+      empty_check <- length(Area)
+      if(empty_check==0){
+        b$var <- 0
+      } else {
+        b$var <- (b$total.area[b$class==ii] / 1000000) / b$Area_total_Km2_VEG_LU * 100
+      }
+      New_name <- paste("LUVEG_", as.character(ii), sep="")
+      last_column <- length(colnames(b))
+      colnames(b)[last_column] <- New_name
     }
-    New_name <- paste("LUVEG_", as.character(ii), sep="")
-    last_column <- length(colnames(b))
-    colnames(b)[last_column] <- New_name
-  }
-  ###########################################################################
+    ###########################################################################
   
-  b<-b[1,c(39:last_column)]	#EXTRACT ONLY IMPORTANT COLUMNS
-  write.table(b,paste(workspace_dest, filename, ".txt", sep=""), row.names = F)
-  print(paste("img",i,"of", length(raslist)))
+    b<-b[1,c(39:last_column)]	#EXTRACT ONLY IMPORTANT COLUMNS
+    write.table(b,paste(workspace_dest, filename, ".txt", sep=""), row.names = F)
+    print(paste("img",i,"of", length(raslist)))
+  }
 }
 print("done!")
 
