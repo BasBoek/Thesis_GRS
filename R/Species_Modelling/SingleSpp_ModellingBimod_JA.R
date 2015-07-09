@@ -78,7 +78,7 @@ myBiomodModelOut <- BIOMOD_Modeling(
                            NbRunEval=1, 
                            DataSplit=80, 
                            Prevalence=0.5, 
-                           VarImport=3,                            ####### What is this????
+                           VarImport=3,
                            models.eval.meth = c('ROC'),
                            SaveObj = TRUE,
                            rescal.all.models = TRUE,
