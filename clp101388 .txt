@@ -1,0 +1,2 @@
+"NumClasses_J" "ED_total_J" "Area_total_Km2" "landscape"
+"1" 5 0.0344 1 "clp101388"
