@@ -11,7 +11,7 @@ Source_loc <- "data/Bee_data/FOR_R_origin_from_Bee_data_Prepared_for_R.csv"
 
 Bees_all <- read.csv(Source_loc, header=T, sep=";")
 Bees_all <- subset(Bees_all, Y_Round < 475)
-Bees_all <- Bees_all[,c(1,2,3,4,13)]
+Bees_all <- Bees_all[,c(1,2,3,4,11:13)]
 species <- unique(Bees_all$FULL_SPECIES)
 
 ############ Creating species frequency table #############
@@ -45,7 +45,7 @@ rm(newdata)
 
 # Write to table
 Bees_subset_2003_100 <- droplevels(Bees_subset_2003_100)
-write.table(Bees_subset_2003_100, "data/Bee_data/Bee_data_SDM_input.csv")
+write.table(Bees_subset_2003_100, "data/Bee_data/Bee_data_SDM_input.csv", row.names=F)
 
 
 
