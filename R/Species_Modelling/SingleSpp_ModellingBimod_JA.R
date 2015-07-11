@@ -8,6 +8,8 @@ library(biomod2)
 ####################################################
 ###To get the coordinates of the study area in table
 ####################################################
+
+## Include raster describing all cells which have at least 1 species record
 predictor.files <- list.files("~/Desktop/Nullmodel_Butter/p4_5k/training", pattern='.asc$', full.names=T)
 predictor.files
 studyarea<-raster(predictor.files[12])

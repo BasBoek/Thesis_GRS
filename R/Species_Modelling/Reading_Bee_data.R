@@ -43,11 +43,52 @@ for(i in 2:length(subset_sp_100)){
 }
 rm(newdata)
 
+# Assign new coordinates for the conversion of the point data to raster in ArcGIS
+Bees_subset_2003_100$X_ArcGIS <- 1
+Bees_subset_2003_100$Y_ArcGIS <- 1
+for(i in 1:nrow(Bees_subset_2003_100)){
+  Bees_subset_2003_100$X_ArcGIS[i] <- Bees_subset_2003_100$X_Round[i] * 1000 + 500
+  Bees_subset_2003_100$Y_ArcGIS[i] <- Bees_subset_2003_100$Y_Round[i] * 1000 + 500
+}
+
+
+
 # Write to table
 Bees_subset_2003_100 <- droplevels(Bees_subset_2003_100)
-write.table(Bees_subset_2003_100, "data/Bee_data/Bee_data_SDM_input.csv", row.names=F)
+write.table(Bees_subset_2003_100, "data/Bee_data/Bee_data_All_sp_1_column.csv", row.names=F)
+
+# Continuing with making data for species in separate columns
+FULL_SP_table <- Bees_subset_2003_100
+species <- unique(FULL_SP_table[4])
+
+# Creating separate presence column for every species
+for(i in 1:nrow(species)){
+  name_column <- as.character(species[i,])
+  FULL_SP_table[,name_column] <- NA
+  for(ii in 1:nrow(FULL_SP_table)){
+    if(FULL_SP_table[ii,4]==name_column){
+      FULL_SP_table[ii,name_column] <- 1
+    } 
+  } 
+}
+
+# Write to table
+write.table(FULL_SP_table, "data/Bee_data/Bee_data_SDM_input_All_sp_sep_columns.csv", row.names=F)
 
 
+
+
+#########################################################################
+#### SOME ARCGIS ANALYSES --> RASTER OF LOCATIONS WITH AT LEAST 1 SPECIES
+#########################################################################
+
+# Then, read that table
+
+# Bees_presence <- raster("data/Bee_data/Bees_raster_min_1_loc/At_Least_one_record.tif")
+# plot(Bees_presence)
+
+##################################################
+##################################################
 
 
 

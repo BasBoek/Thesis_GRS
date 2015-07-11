@@ -28,15 +28,35 @@ final$CELL_ID <- 1
 for(i in 1:nrow(final)){
   final$CELL_ID[i] <- as.numeric(substring(final$landscape[i], 4, nchar(as.character(final$landscape[i]))))
 }
+# Making column for point coordinates ArcGIS
+final$X_ArcGIS <- 1
+final$Y_ArcGIS <- 1
+for(i in 1:nrow(final)){
+  final$X_ArcGIS[i] <- floor(final$CELL_ID[i] / 1000)*1000+500
+  final$Y_ArcGIS[i] <- ((final$CELL_ID[i]/1000 - floor(final$CELL_ID[i]/1000)) *1000)*1000+500
+}
+
 # Subsetting VEG variables by area of NoData, writing new table to .csv
-VEG_vars <- final[c(43,7,14,15,18:25,16)]
+VEG_vars <- final[c(43:45,7,14,15,18:25,16)]
 VEG_vars <- subset(VEG_vars, VEG_vars[13] > 0.4) # Select areas where NA is less than 60%
 VEG_vars <- VEG_vars[1:length(VEG_vars)-1]
 write.table(VEG_vars,"data/Predictors/SDM_VEG_vars.csv", row.names = F)
 
 # Idem for LU variables...
+LU_vars <- final[c(43:45,5,6,9:10,12,11)]
+LU_vars <- subset(LU_vars, LU_vars[9] > 0.4) # Select areas where NA is less than 60%
+LU_vars <- LU_vars[1:length(LU_vars)-1]
+write.table(LU_vars,"data/Predictors/SDM_LU_vars.csv", row.names = F)
 
+names(final)
 # Idem for LUVEG variables...
+LUVEG_vars <- final[c(43:45,2,5,12, 28,29,32:42,30)]
+LUVEG_vars <- subset(LUVEG_vars, LUVEG_vars[20] > 0.4) # Select areas where NA is less than 60%
+LUVEG_vars <- LUVEG_vars[1:length(LUVEG_vars)-1]
+write.table(LUVEG_vars,"data/Predictors/SDM_LUVEG_vars.csv", row.names = F)
+
+
+
 
 DataSpecies <- read.csv("data/Bee_data/Bee_data_SDM_input.csv", sep="", header=T)
 
