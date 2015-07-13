@@ -11,22 +11,19 @@ library(rgdal)
 
 ## WHERE ARE THE PREDICTOR FILES??
 
-foldername_predictors <- "VEG"
-workspace <- paste("D:/SDM/Input_Rasters_KM2/", foldername_predictors, sep="")
+foldername_predictors <- "LUVEG"
+workspace_training <- paste("D:/SDM/Input_Rasters_KM2/training/", foldername_predictors, sep="")
 
 
 ####################################################
 ###To get the coordinates of the study area in table
 ####################################################
-predictor.files <- list.files(workspace, pattern = ".tfw", full.names=T)  
+predictor.files <- list.files(workspace_training, pattern = ".tfw", full.names=T)  
 predictor.files <- gsub(".tfw", ".tif", predictor.files)  
-
-studyarea <- raster("data/Bee_data/Bees_raster_min_1_loc/At_Least_one_record.tif")
+predictor.files
 
 # load our species data
 DataSpecies <- read.csv("data/Bee_data/Bee_data_SDM_input_All_sp_sep_columns.csv", sep="", header=T)
-
-summary(DataSpecies)
 
 # the name of studied species
 myRespName <- 'Bombus_pascuorum'
@@ -37,14 +34,10 @@ myResp <- as.numeric(DataSpecies[,myRespName])
 # the XY coordinates of species data
 myRespXY <- DataSpecies[,c("X_ArcGIS","Y_ArcGIS")]
 
-
 # load the environmental raster layers (could be .img, ArcGIS 
 # rasters or any supported format by the raster package)
 
 myExpl = stack(predictor.files)
-plot()
-extent(studyarea) <- extent(myExpl)
-test <- mask(myExpl, studyarea, maskvalue=NA)
 
 ###################################################
 ### code chunk number 3: formating_data
@@ -54,7 +47,7 @@ myBiomodData <- BIOMOD_FormatingData(resp.var = myResp,
                                      resp.xy = myRespXY,
                                      resp.name = myRespName,
                                      PA.nb.rep = 5,
-                                     PA.nb.absences =1000,
+                                     PA.nb.absences =500,
                                      PA.strategy = 'random')
 
 
@@ -84,24 +77,23 @@ myBiomodOption <- BIOMOD_ModelingOptions()
 
 myBiomodModelOut <- BIOMOD_Modeling( 
                            myBiomodData, 
-                           models = c('GLM','RF',"GBM"), 
-                           models.options = myBiomodOption, 
-                           NbRunEval=1, 
+                           models = c('GLM'), 
+                           models.options = myBiomodOption, # Default is a quadratic model
+                           NbRunEval=5, 
                            DataSplit=80, 
                            Prevalence=0.5, 
-                           VarImport=3,
-                           models.eval.meth = c('ROC'),
+                           VarImport=5,
+                           models.eval.meth = c('ROC', 'TSS', 'ACCURACY'),
                            SaveObj = TRUE,
                            rescal.all.models = TRUE,
                            do.full.models = FALSE,
-                           modeling.id = paste(myRespName,"_P4",sep=""))
-
+                           modeling.id = paste("Model_", myRespName,sep=""))
 
 
 ###################################################
 ### code chunk number 8: modeling_summary
 ###################################################
-myBiomodModelOut 
+myBiomodModelOut
 
 
 ###################################################
@@ -112,67 +104,16 @@ myBiomodModelEval <- get_evaluations(myBiomodModelOut)
                                      
 # print the dimnames of this object
 dimnames(myBiomodModelEval)
-                                     
-# let's print the TSS scores of Random Forest
-myBiomodModelEval["TSS","Testing.data","RF",,]
+test <- as.data.frame(myBiomodModelEval)                                   
 
 # let's print the ROC scores of all selected models
 myBiomodModelEval["ROC","Testing.###################################################data",,,]
 
-
+test2 <- t(test)
 
 ###################################################
 ### code chunk number 10: modeling_variable_importance
 ###################################################
-# print variable importances                                    
-get_variables_importance(myBiomodModelOut)
-
-
-
-### code chunk number 11: ensemble_modeling
-###################################################
-myBiomodEM <- BIOMOD_EnsembleModeling( 
-                     modeling.output = myBiomodModelOut,
-                     chosen.models = 'all',
-                     em.by='all',
-                     eval.metric = c('ROC'),
-                     models.eval.meth = c('ROC'),
-                     eval.metric.quality.threshold = c(),
-                     prob.mean = F,
-                     prob.cv = F,
-                     prob.ci = F,
-                     prob.ci.alpha = 0.05,
-                     prob.median = T,
-                     committee.averaging = F,
-                     prob.mean.weight = T,
-                     prob.mean.weight.decay = 'proportional',
-                     VarImport = 1)                           ######## What is this???????
-
-get_evaluations(myBiomodEM)
-
-ensemble_models_names <- BIOMOD_LoadModels(myBiomodEM)
-ensemble_models_names
-vi <- list()
-for (mod in ensemble_models_names){
-  cat("\n> variables importance of ", mod)
-  vi <- c(vi, variables_importance(model=get(mod), data=get_formal_data(myBiomodModelOut,'expl.var'), method="full_rand", nb_rand=2))
-}
-names(vi)<-ensemble_models_names
-vi
-vi1<-as.data.frame(vi)
-vi1$New_Median_average<-(vi1[1]+vi1[2])/2;vi1$New_Wmean_average<-(vi1[3]+vi1[4])/2
-
-
-
-###################################################
-### code chunk number 12: ensemble_modeling_outputs
-###################################################
-# print summary                     
-myBiomodEM
-                     
-# get evaluation scores
-get_evaluations(myBiomodEM)
-
 # print variable importances                                    
 get_variables_importance(myBiomodModelOut)
 
