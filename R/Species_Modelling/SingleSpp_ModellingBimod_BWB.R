@@ -6,6 +6,12 @@
 rm(list=ls())
 
 library(biomod2)
+library(raster)
+library(rgdal)
+
+## WHERE ARE THE PREDICTOR FILES??
+workspace <- 
+
 
 ####################################################
 ###To get the coordinates of the study area in table
