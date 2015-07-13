@@ -10,22 +10,22 @@ library(raster)
 library(rgdal)
 
 ## WHERE ARE THE PREDICTOR FILES??
-workspace <- 
+
+foldername_predictors <- "VEG"
+workspace <- paste("D:/SDM/Input_Rasters_KM2/", foldername_predictors, sep="")
 
 
 ####################################################
 ###To get the coordinates of the study area in table
 ####################################################
-predictor.files <- read.table("data/Predictors/SDM_VEG_vars.csv", header=T)  
+predictor.files <- list.files(workspace, pattern = ".tfw", full.names=T)  
+predictor.files <- gsub(".tfw", ".tif", predictor.files)  
 
-predictor.files
-studyarea<-raster(predictor.files[12])
-studyarea1<-as.data.frame(studyarea, xy = TRUE)
-studyarea1<-na.omit(studyarea1)
+studyarea <- raster("data/Bee_data/Bees_raster_min_1_loc/At_Least_one_record.tif")
 
 # load our species data
-DataSpecies <- read.csv("data/Bee_data/Bee_data_SDM_input.csv", sep="", header=T)
-head(DataSpecies)
+DataSpecies <- read.csv("data/Bee_data/Bee_data_SDM_input_All_sp_sep_columns.csv", sep="", header=T)
+
 summary(DataSpecies)
 
 # the name of studied species
@@ -35,14 +35,16 @@ myRespName <- 'Bombus_pascuorum'
 myResp <- as.numeric(DataSpecies[,myRespName])
 
 # the XY coordinates of species data
-myRespXY <- DataSpecies[,c("POINT_X","POINT_Y")]
+myRespXY <- DataSpecies[,c("X_ArcGIS","Y_ArcGIS")]
 
 
 # load the environmental raster layers (could be .img, ArcGIS 
 # rasters or any supported format by the raster package)
 
 myExpl = stack(predictor.files)
-
+plot()
+extent(studyarea) <- extent(myExpl)
+test <- mask(myExpl, studyarea, maskvalue=NA)
 
 ###################################################
 ### code chunk number 3: formating_data
