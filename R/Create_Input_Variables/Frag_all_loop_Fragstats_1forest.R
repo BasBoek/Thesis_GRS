@@ -42,3 +42,4 @@ print("done!")
 tablist <- list.files(workspace_dest, pattern ="*.txt", full.names=TRUE)
 All_records <- do.call("rbind", lapply(tablist, read.table, header = TRUE))
 write.csv(All_records, paste(workspace_dest, table_name,".csv", sep=""))
+
