@@ -38,7 +38,7 @@ myRespXY <- DataSpecies[,c("X_ArcGIS","Y_ArcGIS")]
 # rasters or any supported format by the raster package)
 
 myExpl = stack(predictor.files)
-
+plot(myExpl[[11]])
 ###################################################
 ### code chunk number 3: formating_data
 ###################################################
@@ -47,7 +47,7 @@ myBiomodData <- BIOMOD_FormatingData(resp.var = myResp,
                                      resp.xy = myRespXY,
                                      resp.name = myRespName,
                                      PA.nb.rep = 5,
-                                     PA.nb.absences =500,
+                                     PA.nb.absences = 1250, # One species has 914 records. There are 2643 unique locations. Choosing 1000 PA is quite a lot (which is good for GLM SDM, and it can vary enough to see if there is many variation in model performance / var_imp etc..). 
                                      PA.strategy = 'random')
 
 
@@ -81,47 +81,41 @@ myBiomodModelOut <- BIOMOD_Modeling(
                            models.options = myBiomodOption, # Default is a quadratic model
                            NbRunEval=5, 
                            DataSplit=80, 
-                           Prevalence=0.5, 
+                           Prevalence=0.5, # So absences & presences are equally weighted
                            VarImport=5,
                            models.eval.meth = c('ROC', 'TSS', 'ACCURACY'),
                            SaveObj = TRUE,
                            rescal.all.models = TRUE,
                            do.full.models = FALSE,
-                           modeling.id = paste("Model_", myRespName,sep=""))
+                           modeling.id = paste("Model_", myRespName, "_BWB", sep=""))
 
+### save models evaluation scores and variables importance on hard drive
+capture.output(get_evaluations(myBiomodModelOut), file=file.path(myRespName, 
+      paste("D:/SDM/SDM_Output/", myRespName,"_Model_Eval_BWB.csv", sep="")))
 
-###################################################
-### code chunk number 8: modeling_summary
-###################################################
+capture.output(get_variables_importance(myBiomodModelOut), file=file.path(myRespName, 
+      paste("D:/SDM/SDM_Output/", myRespName,"_Model_Var_Imp_BWB.csv", sep="")))               
+
+### modeling_summary
 myBiomodModelOut
 
-
-###################################################
-### code chunk number 9: modeling_model_evaluation
-###################################################
 # get all models evaluation                                     
 myBiomodModelEval <- get_evaluations(myBiomodModelOut)
-                                     
+                                 
 # print the dimnames of this object
 dimnames(myBiomodModelEval)
-test <- as.data.frame(myBiomodModelEval)                                   
 
 # let's print the ROC scores of all selected models
 myBiomodModelEval["ROC","Testing.###################################################data",,,]
 
-test2 <- t(test)
-
-###################################################
-### code chunk number 10: modeling_variable_importance
-###################################################
 # print variable importances                                    
 get_variables_importance(myBiomodModelOut)
 
 
 ###################################################
-### code chunk number 13: projection_curent
+### code chunk number 13: projection
 ###################################################
-# projection over the globe under current conditions
+# projection over the South NL under current conditions
 myExpl_completearea<-stack(predictor.files <- list.files("~/Desktop/Nullmodel_Butter/p4_5k/complete_area", pattern='.asc$', full.names=T))
 
 myBiomodProj <- BIOMOD_Projection(
@@ -132,7 +126,7 @@ myBiomodProj <- BIOMOD_Projection(
                          binary.meth = 'ROC',
                          compress = 'xz',
                          clamping.mask = F,
-                         output.format = '.img')
+                         output.format = '.tif')
 
 # summary of crated oject
 myBiomodProj
@@ -157,61 +151,3 @@ myCurrentProj <- get_predictions(myBiomodProj)
 myCurrentProj
 
 
-###################################################
-### code chunk number 16: projection_future
-###################################################
-# load environmental variables for the future. 
-myExplFuture = stack( system.file( "external/bioclim/future/bio3.grd",
-                                 package="biomod2"),
-                    system.file( "external/bioclim/future/bio4.grd",
-                                 package="biomod2"),
-                    system.file( "external/bioclim/future/bio7.grd",
-                                 package="biomod2"),
-                    system.file( "external/bioclim/future/bio11.grd",
-                                 package="biomod2"),
-                    system.file( "external/bioclim/future/bio12.grd",
-                                 package="biomod2"))
-
-myBiomodProjFuture <- BIOMOD_Projection(
-                              modeling.output = myBiomodModelOut,
-                              new.env = myExplFuture,
-                              proj.name = 'future',
-                              selected.models = 'all',
-                              binary.meth = 'TSS',
-                              compress = 'xz',
-                              clamping.mask = T,
-                              output.format = '.grd')
-                              
-
-
-
-###################################################
-### code chunk number 17: projection_current_plot
-###################################################
-# make some plots, sub-selected by str.grep argument
-plot(myBiomodProjFuture, str.grep = 'MARS')
-
-
-###################################################
-### code chunk number 18: EnsembleForecasting_current
-###################################################
-myBiomodEF <- BIOMOD_EnsembleForecasting( 
-                      EM.output = myBiomodEM,
-                      projection.output = myBiomodProj,
-                      binary.meth = 'ROC',
-                      compress = 'xz',
-                      clamping.mask = F,
-                      output.format = '.img')
-
-
-###################################################
-### code chunk number 19: EnsembleForecasting_loading_res
-###################################################
-myBiomodEF
-
-
-###################################################
-### code chunk number 20: EnsembleForecasting_plotting_res
-###################################################
-# reduce layer names for plotting convegences
-plot(myBiomodEF)

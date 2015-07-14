@@ -51,6 +51,7 @@ for(i in 1:nrow(Bees_subset_2003_100)){
   Bees_subset_2003_100$Y_ArcGIS[i] <- Bees_subset_2003_100$Y_Round[i] * 1000 + 500
 }
 
+hist(subset_100$Counts, breaks=15)
 
 
 # Write to table
@@ -71,6 +72,8 @@ for(i in 1:nrow(species)){
     } 
   } 
 }
+
+nr_locations <- unique(Bees_subset_2003_100$X_Y_COOR)
 
 # Write to table
 write.table(FULL_SP_table, "data/Bee_data/Bee_data_SDM_input_All_sp_sep_columns.csv", row.names=F)
