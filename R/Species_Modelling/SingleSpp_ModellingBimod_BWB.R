@@ -38,7 +38,7 @@ myRespXY <- DataSpecies[,c("X_ArcGIS","Y_ArcGIS")]
 # rasters or any supported format by the raster package)
 
 myExpl = stack(predictor.files)
-plot(myExpl[[11]])
+plot(myExpl)
 ###################################################
 ### code chunk number 3: formating_data
 ###################################################
@@ -96,20 +96,20 @@ capture.output(get_evaluations(myBiomodModelOut), file=file.path(myRespName,
 capture.output(get_variables_importance(myBiomodModelOut), file=file.path(myRespName, 
       paste("D:/SDM/SDM_Output/", myRespName,"_Model_Var_Imp_BWB.csv", sep="")))               
 
-### modeling_summary
-myBiomodModelOut
-
-# get all models evaluation                                     
-myBiomodModelEval <- get_evaluations(myBiomodModelOut)
-                                 
-# print the dimnames of this object
-dimnames(myBiomodModelEval)
-
-# let's print the ROC scores of all selected models
-myBiomodModelEval["ROC","Testing.###################################################data",,,]
-
-# print variable importances                                    
-get_variables_importance(myBiomodModelOut)
+# ### modeling_summary
+# myBiomodModelOut
+# 
+# # get all models evaluation                                     
+# myBiomodModelEval <- get_evaluations(myBiomodModelOut)
+#                                  
+# # print the dimnames of this object
+# dimnames(myBiomodModelEval)
+# 
+# # let's print the ROC scores of all selected models
+# myBiomodModelEval["ROC","Testing.###################################################data",,,]
+# 
+# # print variable importances                                    
+# get_variables_importance(myBiomodModelOut)
 
 
 ###################################################
@@ -123,12 +123,12 @@ myBiomodProj <- BIOMOD_Projection(
                          new.env = myExpl_completearea,
                          proj.name = 'current',
                          selected.models = 'all',
-                         binary.meth = 'ROC',
+                         binary.meth = NULL, 'ROC',
                          compress = 'xz',
                          clamping.mask = F,
                          output.format = '.tif')
 
-# summary of crated oject
+# summary of created oject
 myBiomodProj
 
 # files created on hard drive
