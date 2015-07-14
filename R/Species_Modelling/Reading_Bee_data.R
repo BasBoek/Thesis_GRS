@@ -4,7 +4,7 @@
 
 
 rm(list=ls())
-
+setwd("D:/R_Projects/Thesis_GRS2")
 Source_loc <- "data/Bee_data/FOR_R_origin_from_Bee_data_Prepared_for_R.csv"
 
 # Subsetting South of the Netherlands and relevant columns
