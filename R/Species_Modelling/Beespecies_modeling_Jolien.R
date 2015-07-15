@@ -92,7 +92,7 @@ MyBiomodSF <- function(sp.n){
                                        expl.var = myExpl,
                                        resp.xy = myRespCoord,
                                        resp.name = myRespName,
-                                       PA.nb.rep = 1,
+                                       PA.nb.rep = 5,
                                        PA.nb.absences = 10*sum(myResp==1,na.rm=T),
                                        PA.strategy = 'random')  
   #plot(myBiomodData)
@@ -129,17 +129,17 @@ MyBiomodSF <- function(sp.n){
   ### Building ensemble-models
   myBiomodEM <- BIOMOD_EnsembleModeling( 
     modeling.output = myBiomodModelOut,
-    chosen.models = 'all',
-    em.by='all',
-    eval.metric = c('ROC','TSS'),
+    chosen.models = 'all',                # So only GLM
+    em.by='all',                          # Also only GLM
+    eval.metric = c('ROC','TSS'),         # How does binary transformation work?
     models.eval.meth = c('ROC','TSS'),
     eval.metric.quality.threshold = c(),
     prob.mean = T,
-    prob.cv = F,
-    prob.ci = F,
+    prob.cv = T,
+    prob.ci = F, # If TRUE, two ensemble models will be build. 
     prob.ci.alpha = 0.05,
     prob.median = T,
-    committee.averaging = T,
+    committee.averaging = T, # = Average of binary predictions
     prob.mean.weight = T,
     prob.mean.weight.decay = 'proportional',
     VarImport = 5) #make it 5

@@ -2,15 +2,16 @@
 ###################################################
 ### code chunk number 2: loading_data
 ###################################################
-# load the library
-rm(list=ls())
 
+# load libraries
+rm(list=ls())
+setwd("D:/R_Projects/Thesis_GRS2")
 library(biomod2)
 library(raster)
 library(rgdal)
+source("R/Species_Modelling/Write_SDM_Rasters.R")
 
 ## WHERE ARE THE PREDICTOR FILES??
-setwd("D:/R_Projects/Thesis_GRS2")
 foldername_predictors <- "LUVEG"
 workspace_training <- paste("D:/SDM/Input_Rasters_KM2/training/", foldername_predictors, sep="")
 
@@ -24,6 +25,9 @@ predictor.files
 # load our species data
 DataSpecies <- read.csv("data/Bee_data/Bee_data_SDM_input_All_sp_sep_columns.csv", sep="", header=T)
 
+length(unique(DataSpecies$X_Y_COOR))
+
+sum(DataSpecies$Nomada_alboguttata, na.omit=T)
 # the name of studied species
 myRespName <- "Nomada_alboguttata"
 
@@ -50,7 +54,7 @@ myBiomodData <- BIOMOD_FormatingData(resp.var = myResp,
                                      PA.strategy = 'random')
 
 # plot(myBiomodData)
-
+# myBiomodData
 
 # ###################################################
 # ### code chunk number 7: MODELLING
@@ -65,72 +69,92 @@ myBiomodModelOut <- BIOMOD_Modeling(
                            NbRunEval=2, 
                            DataSplit=75, 
                            Prevalence=0.5, # So absences & presences are equally weighted
-                           VarImport=10,
-                           models.eval.meth = c('ROC', 'TSS', 'ACCURACY'),
+                           VarImport=2,
+                           models.eval.meth = c('TSS'), # Here must be at least the ones listed that will be used for the ensemble models as well..
                            SaveObj = TRUE,
                            rescal.all.models = TRUE,
                            do.full.models = FALSE)
-                           modeling.id = paste("Model_", myRespName, "_BWB", sep=""))
+                           modeling.id = paste("Model_", myRespName, "_BWB", sep="")
 
+# summary of created object
+
+###################################################
+### code chunk number 13: projection   ############
+###################################################
+
+workspace_full_area <- paste("D:/SDM/Input_Rasters_KM2/full_area/", foldername_predictors, sep="")
+predictors_full <- list.files(workspace_full_area, pattern='.tif$', full.names=T)
+myExpl_completearea <- stack(predictors_full)
+
+myBiomodProj <- BIOMOD_Projection(
+  modeling.output = myBiomodModelOut,
+  new.env = myExpl_completearea,
+  proj.name = 'current',
+  selected.models = 'all',
+  binary.meth = c(NULL, 'ROC'),
+  compress = 'xz',
+  build.clamping.mask = F,
+  do.stack=T)
+
+######################################################################
+####################### Building ensemble-models #####################
+######################################################################
+
+myBiomodEM <- BIOMOD_EnsembleModeling( 
+  modeling.output = myBiomodModelOut,
+  chosen.models = 'all',                # So only GLM
+  em.by='all',                          # Also only GLM
+  eval.metric = c('ROC','TSS'),         # How does binary transformation work? Answer: http://www.sciencedirect.com/science/article/pii/S1146609X07000288
+  models.eval.meth = c('ROC','TSS'),
+  eval.metric.quality.threshold = c(),
+  prob.mean = T,
+  prob.cv = T,
+  prob.ci = F,  
+  prob.ci.alpha = 0.05,
+  prob.median = F,                      # Very similar to mean as for nomad_albugutta 
+  committee.averaging = T,              # Average of binary predictions
+  prob.mean.weight = F,
+  VarImport = 5) # Tried 10, but variation is very little, 5 should definitely be sufficient
+
+myBiomodEM
+get_prob.cv(myBiomodEM)
+get_variables_importance(myBiomodEM)
+get_evaluations(myBiomodEM)
+get_model_options(myBiomodEM)
 #####################################################################################
 ### Edit and save models evaluation scores and variables importance on hard drive ###
 #####################################################################################
-VarImp <- get_variables_importance(myBiomodModelOut)
+VarImp <- get_variables_importance(myBiomodEM)
 VarImp <- as.data.frame(VarImp)
-VarImp <- as.data.frame(t(VarImp))
 VarImp$Species <- myRespName
-Rownames <- rownames(VarImp)
-VarImp$Run <- as.numeric(substring(Rownames, nchar(Rownames)-4, nchar(Rownames)-4))
-VarImp$PA <- as.numeric(substring(Rownames, nchar(Rownames), nchar(Rownames)))
 
-Eval <- get_evaluations(myBiomodModelOut)
+Eval <- get_evaluations(myBiomodEM)
 Eval <- as.data.frame(Eval)
 Eval <- as.data.frame(t(Eval))
 Eval$Species <- myRespName
-Rownames <- rownames(Eval)
-Eval$Statistic <- substring(Rownames, 1, nchar(Rownames)-13)
-Eval$Run <- as.numeric(substring(Rownames, nchar(Rownames)-4, nchar(Rownames)-4))
-Eval$PA <- as.numeric(substring(Rownames, nchar(Rownames), nchar(Rownames)))
 
 write.table(Eval, paste("D:/SDM/SDM_Output/_Evaluation/", myRespName, "_Evaluation.txt", sep=""),sep=" ", row.names=F)
 write.table(VarImp, paste("D:/SDM/SDM_Output/_Var_imp/", myRespName, "_Variable_Imp.txt", sep=""),sep=" ", row.names=F)
 
-###################################################
-### code chunk number 13: projection
-###################################################
-# projection over the South NL under current conditions
 
-getwd()
-names(myExpl)
-names(myExpl_completearea)
-workspace_full_area <- paste("D:/SDM/Input_Rasters_KM2/full_area/", foldername_predictors, sep="")
-predictors_full <- list.files(workspace_full_area, pattern='.tif$', full.names=T)
-myExpl_completearea <- stack(predictors_full)
-str(myExpl_completearea)
-myBiomodProj <- BIOMOD_Projection(
-                         modeling.output = myBiomodModelOut,
-                         new.env = myExpl_completearea,
-                         proj.name = 'current',
-                         selected.models = 'all',
-                         binary.meth = c(NULL, 'ROC'),
-                         compress = 'xz',
-                         build.clamping.mask = F,
-                         do.stack=T)
+####################################################################
+###### Make ensemble-models projections on current variable ########
+####################################################################
+
+myBiomodEF <- BIOMOD_EnsembleForecasting( 
+  EM.output = myBiomodEM,
+  projection.output = myBiomodProj,
+  binary.meth = c('TSS'), # Writing extra Rasters stacks. If ROC is chosen, this will contain multiple rasters (e.g. from mean, median, commitee etc) times the number of evaluation metrices chosen in myBiomodEM. Only TSS will be chosen, since optimizing ROC would be the same as optimizing the TSS (Liu et. al, 2013)
+  compress = 'xz',
+  clamping.mask = F,
+  do.stack=T)
 
 
-# # summary of created oject
-# plot(myBiomodProj)
-# plot(myBiomodProj, str.grep = 'GLM')
-# 
-# # if you want to make custom plots, you can also get the projected map
-# myCurrentProj <- get_predictions(myBiomodProj)
+removeTmpFiles()
 
-# Read the written raster files
-genus_name <- as.character(as.data.frame(strsplit(myRespName, "_"))[1,])
-species_name  <- as.character(as.data.frame(strsplit(myRespName, "_"))[2,])
+### Writing the rasters to a output location
+Write_SDM_Rasters(myRespName, "D:/SDM/SDM_Output/_Rasters_SDM_Models/")
 
-Pred_ROC_bin <- stack(paste("D:/SDM/SDM_Output/", genus_name, ".", species_name, "/proj_current/proj_current_", genus_name, ".", species_name, "_ROCbin.gri", sep=""))
-
-Pred_Suit_scores <- stack(paste("D:/SDM/SDM_Output/", genus_name, ".", species_name, "/proj_current/proj_current_", genus_name, ".", species_name, sep=""))
-plot(Pred_Suit_scores)
-plot(Pred_ROC_bin)
+test <- stack("D:/SDM/SDM_Output/_Rasters_SDM_Models/Nomada.alboguttata_ensemble_ROCbin.tif")
+plot(test)
+plot(myBiomodEF)
