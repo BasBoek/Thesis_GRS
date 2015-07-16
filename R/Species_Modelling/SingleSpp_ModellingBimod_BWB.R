@@ -27,7 +27,6 @@ DataSpecies <- read.csv("data/Bee_data/Bee_data_SDM_input_All_sp_sep_columns.csv
 
 length(unique(DataSpecies$X_Y_COOR))
 
-sum(DataSpecies$Nomada_alboguttata, na.omit=T)
 # the name of studied species
 myRespName <- "Nomada_alboguttata"
 
@@ -66,11 +65,11 @@ myBiomodModelOut <- BIOMOD_Modeling(
                            myBiomodData, 
                            models = c('GLM'), 
                            models.options = myBiomodOption, # Default is a quadratic model
-                           NbRunEval=2, 
+                           NbRunEval=10, 
                            DataSplit=75, 
                            Prevalence=0.5, # So absences & presences are equally weighted
                            VarImport=2,
-                           models.eval.meth = c('TSS'), # Here must be at least the ones listed that will be used for the ensemble models as well..
+                           models.eval.meth = c('TSS', "ROC"), # Here must be at least the ones listed that will be used for the ensemble models as well..
                            SaveObj = TRUE,
                            rescal.all.models = TRUE,
                            do.full.models = FALSE)
@@ -104,23 +103,19 @@ myBiomodEM <- BIOMOD_EnsembleModeling(
   modeling.output = myBiomodModelOut,
   chosen.models = 'all',                # So only GLM
   em.by='all',                          # Also only GLM
-  eval.metric = c('ROC','TSS'),         # How does binary transformation work? Answer: http://www.sciencedirect.com/science/article/pii/S1146609X07000288
+  eval.metric = c('ROC', 'TSS'),         # For me, (A) to make the binary transformation needed for committee averaging computation. Also: (B) to test (and/or evaluate) your ensemble-models forecasting ability (at this step, each ensemble-model (ensemble will be evaluated according to each evaluation metric)
+  # How does binary transformation ROC work? Answer: http://www.sciencedirect.com/science/article/pii/S1146609X07000288
   models.eval.meth = c('ROC','TSS'),
   eval.metric.quality.threshold = c(),
-  prob.mean = T,
-  prob.cv = T,
+  prob.mean = F,
+  prob.cv = F,
   prob.ci = F,  
   prob.ci.alpha = 0.05,
-  prob.median = F,                      # Very similar to mean as for nomad_albugutta 
+  prob.median = T,                      # Very similar to mean, at least for nomad_albugutta 
   committee.averaging = T,              # Average of binary predictions
   prob.mean.weight = F,
-  VarImport = 5) # Tried 10, but variation is very little, 5 should definitely be sufficient
+  VarImport = 4) # Tried 10, but variation is very little, 5 should definitely be sufficient
 
-myBiomodEM
-get_prob.cv(myBiomodEM)
-get_variables_importance(myBiomodEM)
-get_evaluations(myBiomodEM)
-get_model_options(myBiomodEM)
 #####################################################################################
 ### Edit and save models evaluation scores and variables importance on hard drive ###
 #####################################################################################
@@ -134,8 +129,7 @@ Eval <- as.data.frame(t(Eval))
 Eval$Species <- myRespName
 
 write.table(Eval, paste("D:/SDM/SDM_Output/_Evaluation/", myRespName, "_Evaluation.txt", sep=""),sep=" ", row.names=F)
-write.table(VarImp, paste("D:/SDM/SDM_Output/_Var_imp/", myRespName, "_Variable_Imp.txt", sep=""),sep=" ", row.names=F)
-
+write.table(VarImp, paste("D:/SDM/SDM_Output/_Var_imp/", myRespName, "_Variable_Imp.txt", sep=""),sep=" ", row.names=T)
 
 ####################################################################
 ###### Make ensemble-models projections on current variable ########
@@ -144,7 +138,7 @@ write.table(VarImp, paste("D:/SDM/SDM_Output/_Var_imp/", myRespName, "_Variable_
 myBiomodEF <- BIOMOD_EnsembleForecasting( 
   EM.output = myBiomodEM,
   projection.output = myBiomodProj,
-  binary.meth = c('TSS'), # Writing extra Rasters stacks. If ROC is chosen, this will contain multiple rasters (e.g. from mean, median, commitee etc) times the number of evaluation metrices chosen in myBiomodEM. Only TSS will be chosen, since optimizing ROC would be the same as optimizing the TSS (Liu et. al, 2013)
+  binary.meth = c('ROC'), # Writing extra Rasters stacks. If ROC is chosen, this will contain multiple rasters (e.g. from mean, median, commitee etc) times the number of evaluation metrices chosen in myBiomodEM. Only ROC will be chosen, since optimizing ROC would be the same as optimizing the TSS (Liu et. al, 2013)
   compress = 'xz',
   clamping.mask = F,
   do.stack=T)
@@ -155,6 +149,3 @@ removeTmpFiles()
 ### Writing the rasters to a output location
 Write_SDM_Rasters(myRespName, "D:/SDM/SDM_Output/_Rasters_SDM_Models/")
 
-test <- stack("D:/SDM/SDM_Output/_Rasters_SDM_Models/Nomada.alboguttata_ensemble_ROCbin.tif")
-plot(test)
-plot(myBiomodEF)
