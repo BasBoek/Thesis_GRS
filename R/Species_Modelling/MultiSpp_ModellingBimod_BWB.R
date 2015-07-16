@@ -69,7 +69,7 @@ for(i in 1:length(All_species)){
     myBiomodData, 
     models = c('GLM'), 
     models.options = myBiomodOption, # Default is a quadratic model
-    NbRunEval=2, 
+    NbRunEval=10, 
     DataSplit=75, 
     Prevalence=0.5, # So absences & presences are equally weighted
     VarImport=2,
