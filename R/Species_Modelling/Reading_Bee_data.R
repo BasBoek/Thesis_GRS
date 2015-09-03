@@ -13,6 +13,7 @@ Bees_all <- read.csv(Source_loc, header=T, sep=";")
 Bees_all <- subset(Bees_all, Y_Round < 475)
 Bees_all <- Bees_all[,c(1,2,3,4,11:13)]
 species <- unique(Bees_all$FULL_SPECIES)
+names(Bees_all)
 
 ############ Creating species frequency table #############
 sp_freq <- data.frame(Species=character(), Counts=integer())
@@ -35,6 +36,16 @@ subset_sp_100 <- as.vector(sp_freq$Species[sp_freq[2] > 100])
 subset_counts_100 <- as.vector(sp_freq$Counts[sp_freq[2] > 100])
 nrow(subset_100)
 
+# Write species table to csv
+subset_100$Genus_name <- NA
+subset_100$Species_name <- NA
+for(i in 1:nrow(subset_100)){
+  full_sp <- as.character(subset_100[i,1])
+  subset_100[i,3] <- as.character(as.data.frame(strsplit(full_sp, "_"))[1,1])
+  subset_100[i,4] <- as.character(as.data.frame(strsplit(full_sp, "_"))[2,1])
+}
+write.table(subset_100, "D:/SDM/Bee_data.txt", sep=" ", row.names =F)
+
 # Creating SUBSETTED TABLE   - - - !! CHECK year and species treshold in name !!
 Bees_subset_2003_100 <- subset(Bees_all, FULL_SPECIES == subset_sp_100[1])
 for(i in 2:length(subset_sp_100)){
@@ -42,6 +53,8 @@ for(i in 2:length(subset_sp_100)){
   Bees_subset_2003_100 <- rbind(Bees_subset_2003_100, newdata)
 }
 rm(newdata)
+
+length(unique(Bees_subset_2003_100$X_Y_COOR)) # Number of unique records
 
 # Assign new coordinates for the conversion of the point data to raster in ArcGIS
 Bees_subset_2003_100$X_ArcGIS <- 1

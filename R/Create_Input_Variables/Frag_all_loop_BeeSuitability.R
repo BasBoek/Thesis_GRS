@@ -8,7 +8,7 @@ library(SDMTools)
 source("R/Create_Input_Variables/List_KM_Rasters.R")
 
 ##########################################
-########## BEE_SUITABILITY  ############
+########### BEE_SUITABILITY  #############
 ##########################################
 
 # SET SOURCE & DESTINATION LOCATION (and listing rasters)

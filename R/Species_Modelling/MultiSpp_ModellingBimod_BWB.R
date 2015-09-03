@@ -1,11 +1,13 @@
 # Author: Bastiaen Boekelo
-# June 2015
+# July 2015
 # Script for SDM-ing all species based on the environmental variables
 
 
 ###################################################
 ############## LOADING LIBRARIES   ################
 ###################################################
+
+
 
 # load libraries
 rm(list=ls())
@@ -16,7 +18,7 @@ library(rgdal)
 source("R/Species_Modelling/Write_SDM_Rasters.R")
 
 ## WHERE ARE THE PREDICTOR FILES??
-foldername_predictors <- "LUVEG"
+foldername_predictors <- "LU"
 workspace_training <- paste("D:/SDM/Input_Rasters_KM2/training/", foldername_predictors, sep="")
 
 ####################################################
@@ -34,7 +36,8 @@ DataSpecies <- read.csv("data/Bee_data/Bee_data_SDM_input_All_sp_sep_columns.csv
 
 # LOOP LOOP LOOP LOOP LOOP LOOP LOOP LOOP LOOP LOOP LOOP LOOP LOOP LOOP LOOP
 setwd(paste("D:/SDM/SDM_Output/", foldername_predictors, sep=""))
-All_species <- unique(DataSpecies$FULL_SPECIES)
+All_species <- sort(unique(DataSpecies$FULL_SPECIES))
+
 for(i in 1:length(All_species)){
   
   # the name of studied species
@@ -53,7 +56,7 @@ for(i in 1:length(All_species)){
                                        expl.var = myExpl,
                                        resp.xy = myRespXY,
                                        resp.name = myRespName,
-                                       PA.nb.rep = 2,
+                                       PA.nb.rep = 3,
                                        PA.nb.absences = 1250, # One species has 914 records. There are 2643 unique locations. Choosing 1000 PA is quite a lot (which is good for GLM SDM, and it can vary enough to see if there is many variation in model performance / var_imp etc..). 
                                        PA.strategy = 'random')
   
@@ -118,7 +121,7 @@ for(i in 1:length(All_species)){
     prob.median = T,                      # Very similar to mean, at least for nomad_albugutta 
     committee.averaging = T,              # Average of binary predictions
     prob.mean.weight = F,
-    VarImport = 4) # Tried 10, but variation is very little, 5 should definitely be sufficient
+    VarImport = 4) # Tried 10, but variation is very little, 4 should definitely be sufficient
   
   #####################################################################################
   ########### Edit and save models evaluation scores and variables importance #########
@@ -132,8 +135,8 @@ for(i in 1:length(All_species)){
   Eval <- as.data.frame(t(Eval))
   Eval$Species <- myRespName
   
-  write.table(Eval, paste("D:/SDM/SDM_Output/", foldername_predictors, "/_Evaluation/", myRespName, "_Evaluation.txt", sep=""),sep=" ", row.names=F)
-  write.table(VarImp, paste("D:/SDM/SDM_Output/", foldername_predictors, "/_Var_imp/", myRespName, "_Variable_Imp.txt", sep=""),sep=" ", row.names=F)
+  write.table(Eval, paste("D:/SDM/SDM_Output/", foldername_predictors, "/_Evaluation/", myRespName, "_Evaluation.txt", sep=""),sep=" ", row.names=T)
+  write.table(VarImp, paste("D:/SDM/SDM_Output/", foldername_predictors, "/_Var_imp/", myRespName, "_Variable_Imp.txt", sep=""),sep=" ", row.names=T)
   
   
   ####################################################################
