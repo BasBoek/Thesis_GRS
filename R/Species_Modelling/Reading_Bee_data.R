@@ -26,6 +26,7 @@ for(i in 1:length(species)){
 rm(sp_row)
 colnames(sp_freq) <- c("Species", "Counts")
 sp_freq$Counts <- as.numeric(as.character(sp_freq$Counts))
+
 ############################################################
 
 # Subsetting the South part of the Netherlands

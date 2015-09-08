@@ -18,7 +18,7 @@ library(rgdal)
 source("R/Species_Modelling/Write_SDM_Rasters.R")
 
 ## WHERE ARE THE PREDICTOR FILES??
-foldername_predictors <- "LU"
+foldername_predictors <- "LUVEG"
 workspace_training <- paste("D:/SDM/Input_Rasters_KM2/training/", foldername_predictors, sep="")
 
 ####################################################
