@@ -67,6 +67,12 @@ for(i in 1:nrow(Bees_subset_2003_100)){
 
 hist(subset_100$Counts, breaks=15)
 
+# Extracting number of species per location (using unique coordinates)
+Coor_freq <- as.data.frame(table(Bees_subset_2003_100$X_Y_COOR))
+Sp_div_obs <- merge(Coor_freq, Bees_subset_2003_100, by.x="Var1", by.y="X_Y_COOR")
+Sp_div_obs <- data.frame(Sp_div_obs$X_ArcGIS, Sp_div_obs$Y_ArcGIS, Sp_div_obs$Freq)
+Sp_div_obs <- unique(Sp_div_obs)
+write.table(Sp_div_obs, "data/Bee_data/Nr_of_sp_per_location.csv", sep=",", row.names=F)
 
 # Write to table
 Bees_subset_2003_100 <- droplevels(Bees_subset_2003_100)
